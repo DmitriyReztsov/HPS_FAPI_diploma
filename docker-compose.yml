@@ -1,0 +1,18 @@
+version: "1.0"
+services:
+  db:
+    container_name: db
+    image: postgres:16.1
+    restart: always
+    environment:
+      POSTGRES_DB: "fastapidb"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - fastapi-postgres:/var/lib/postgresql
+    ports:
+      - "5432:5432"
+
+volumes:
+  fastapi-postgres:

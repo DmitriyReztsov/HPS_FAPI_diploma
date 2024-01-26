@@ -1,11 +1,17 @@
 from abc import ABC, abstractmethod
 
 from app.db.database import async_session_maker
-from app.repositories.vehicle_repository import VehicleRepository
+from app.repositories.vehicle_repository import (
+    VehicleBrandRepository,
+    VehicleModelRepository,
+    VehicleRepository,
+)
 
 
 class IUnitOfWork(ABC):
     vehicle: VehicleRepository
+    vehiclebrand: VehicleBrandRepository
+    vehiclemodel: VehicleModelRepository
 
     @abstractmethod
     def __init__(self):
@@ -36,6 +42,8 @@ class UnitOfWork(IUnitOfWork):
         self.session = self.session_factory()
 
         self.vehicle = VehicleRepository(self.session)
+        self.vehiclebrand = VehicleBrandRepository(self.session)
+        self.vehiclemodel = VehicleModelRepository(self.session)
 
     async def __aexit__(self, *args):
         await self.rollback()

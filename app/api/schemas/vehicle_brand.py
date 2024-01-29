@@ -6,6 +6,11 @@ class VehicleBrandCreate(BaseModel):
     original_country: str
 
 
+class VehicleBrandPartialUpdate(BaseModel):
+    brand_name: str | None = None
+    original_country: str | None = None
+
+
 class VehicleBrandFromDB(VehicleBrandCreate):
     model_config = ConfigDict(from_attributes=True)
 

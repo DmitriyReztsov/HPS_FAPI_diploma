@@ -15,6 +15,15 @@ class VehicleCreate(BaseModel):
         from_attributes = True
 
 
+class VehiclePartialUpdate(BaseModel):
+    brandmodel_id: int | None = None
+    description: str | None = None
+    cost: int | None = None
+    manufactured_year: int | None = None
+    mileage: int | None = None
+    is_in_work: bool | None = None
+
+
 class VehicleFromDB(VehicleCreate):
     model_config = ConfigDict(from_attributes=True)
 

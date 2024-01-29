@@ -13,6 +13,15 @@ class VehicleModelCreate(BaseModel):
         from_attributes = True
 
 
+class VehicleModelPartialUpdate(BaseModel):
+    brand_id: int | None = None
+    exact_model_name: str | None = None
+    vehicle_type: str | None = None
+    passenger_capacity: int | None = None
+    tonnage: int | None = None
+    fuel_capacity: int | None = None
+
+
 class VehicleModelFromDB(VehicleModelCreate):
     exact_model_name: str | None
 

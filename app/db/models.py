@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import BigInteger, DateTime, ForeignKey, Text, func
+from sqlalchemy import BigInteger, DateTime, ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
@@ -30,7 +30,7 @@ class VehicleModel(Base):
     tonnage: Mapped[int] = mapped_column(nullable=False)
     fuel_capacity: Mapped[int] = mapped_column(nullable=False)
 
-    brand_id: Mapped[int] = mapped_column(ForeignKey("vehiclebrand.id"))
+    brand_id: Mapped[int] = mapped_column(ForeignKey("vehiclebrand.id", ondelete="CASCADE"))
     brand: Mapped[Optional["VehicleBrand"]] = relationship(back_populates="models", lazy="immediate")
 
     vehicles: Mapped[list["Vehicle"]] = relationship(back_populates="brandmodel")
@@ -48,9 +48,9 @@ class Vehicle(Base):
     manufactured_year: Mapped[int] = mapped_column(nullable=False)
     mileage: Mapped[int] = mapped_column(BigInteger, nullable=False)
     is_in_work: Mapped[bool] = mapped_column(default=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=func.now())
+    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.now)
 
-    brandmodel_id: Mapped[int] = mapped_column(ForeignKey("vehiclemodel.id"))
+    brandmodel_id: Mapped[int] = mapped_column(ForeignKey("vehiclemodel.id", ondelete="SET NULL"), nullable=True)
     brandmodel: Mapped[Optional["VehicleModel"]] = relationship(back_populates="vehicles")
 
     def __str__(self) -> str:

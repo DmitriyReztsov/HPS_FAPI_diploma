@@ -42,7 +42,7 @@ class VehicleModel(Base):
 class Vehicle(Base):
     __tablename__ = "vehicle"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, index=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, index=True, unique=True)
     description: Mapped[str] = mapped_column(Text, nullable=True)
     cost: Mapped[int] = mapped_column(BigInteger, nullable=True)
     manufactured_year: Mapped[int] = mapped_column(nullable=False)
@@ -52,6 +52,13 @@ class Vehicle(Base):
 
     brandmodel_id: Mapped[int] = mapped_column(ForeignKey("vehiclemodel.id", ondelete="SET NULL"), nullable=True)
     brandmodel: Mapped[Optional["VehicleModel"]] = relationship(back_populates="vehicles")
+
+    enterpise_id: Mapped[int] = mapped_column(ForeignKey("enterprise.id", ondelete="SET NULL"), nullable=True)
+    enterprise: Mapped["Enterprise"] = relationship("Enterprise", back_populates="vehicles")  # noqa F821 # type: ignore
+
+    drivers: Mapped[list["DriverVehicle"]] = relationship(  # noqa F821 # type: ignore
+        "DriverVehicle", back_populates="vehicle"
+    )
 
     def __str__(self) -> str:
         return f"{self.id} {'OK' if self.is_in_work else 'NOK'}"

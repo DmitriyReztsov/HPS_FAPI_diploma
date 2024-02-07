@@ -19,3 +19,9 @@ class EnterpriseFromDB(EnterpriseCreate):
     id: int
     vehicles: list[VehicleFromDB]
     drivers: list[DriverFromDB]
+
+
+class EnterpriseShort(EnterpriseCreate):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int

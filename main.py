@@ -4,10 +4,12 @@ from sqladmin import Admin
 
 from app.admin.driver_admin import DriverAdmin, DriverVehicleAdmin
 from app.admin.enterprise_admin import EnterpriseAdmin
+from app.admin.user_admin import UserAdmin
 from app.admin.vehicle_admin import VehicleAdmin, VehicleBrandAdmin, VehicleModelAdmin
 from app.api.endpoints import (
     driver_router,
     enterprise_router,
+    user_router,
     vehicle_brand_router,
     vehicle_model_router,
     vehicle_router,
@@ -16,6 +18,7 @@ from app.db.database import engine
 
 app = FastAPI()
 admin = Admin(app, engine)
+admin.add_view(UserAdmin)
 admin.add_view(VehicleAdmin)
 admin.add_view(VehicleBrandAdmin)
 admin.add_view(VehicleModelAdmin)
@@ -28,6 +31,7 @@ app.include_router(vehicle_brand_router)
 app.include_router(vehicle_model_router)
 app.include_router(driver_router)
 app.include_router(enterprise_router)
+app.include_router(user_router)
 
 if __name__ == "__main__":
     uvicorn.run(

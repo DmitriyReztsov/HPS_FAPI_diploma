@@ -10,7 +10,15 @@ sys.path.append(os.path.join(sys.path[0], "app"))
 
 from app.core.config import settings  # noqa E402
 from app.db.database import Base  # noqa E402
-from app.db.models import Vehicle, VehicleBrand, VehicleModel, Enterprise, Driver  # noqa E402
+from app.db.models import (  # noqa E402
+    Vehicle,
+    VehicleBrand,
+    VehicleModel,
+    Enterprise,
+    Driver,
+    User,
+    user_enterprise_association_table,
+)
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

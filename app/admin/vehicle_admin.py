@@ -23,6 +23,7 @@ class VehicleAdmin(ModelView, model=Vehicle):
         "cost",
         "created_at",
     )
+    form_excluded_columns = ("drivers",)
 
 
 class VehicleBrandAdmin(ModelView, model=VehicleBrand):

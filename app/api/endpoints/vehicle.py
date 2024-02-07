@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.exc import NoResultFound
 
+from app.api.endpoints.user import get_current_active_user
 from app.api.schemas.vehicle import VehicleCreate, VehicleFromDB, VehiclePartialUpdate
 from app.services.vehicle_service import VehicleService
 from app.utils.unitofwork import IUnitOfWork, UnitOfWork
@@ -13,8 +14,17 @@ async def get_vehicle_service(uow: IUnitOfWork = Depends(UnitOfWork)) -> Vehicle
 
 
 @vehicle_router.get("/vehicles/", response_model=list[VehicleFromDB])
-async def get_vehicles(vehicle_service: VehicleService = Depends(get_vehicle_service)):
-    return await vehicle_service.get_vehicles()
+async def get_vehicles(
+    vehicle_service: VehicleService = Depends(get_vehicle_service), current_user: str = Depends(get_current_active_user)
+):
+    allowed_enterprises = [enterprise.id for enterprise in current_user.enterprises]
+    filter_set = {"enterprise_id": allowed_enterprises}
+    if current_user.role is None:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You should have a role in a compmany.")
+    if current_user.role == "admin":
+        return await vehicle_service.get_vehicles()
+    elif current_user.role == "manager":
+        return await vehicle_service.get_vehicles(filter_set)
 
 
 @vehicle_router.get("/vehicles/{vehicle_id}", response_model=VehicleFromDB)

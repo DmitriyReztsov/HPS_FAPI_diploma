@@ -128,9 +128,12 @@ class VehicleService:
             await self.uow.commit()
             return vehicle_to_return
 
-    async def get_vehicles(self) -> list[VehicleFromDB]:
+    async def get_vehicles(self, filter_set=None) -> list[VehicleFromDB]:
         async with self.uow:
-            vehicles: list = await self.uow.vehicle.find_all()
+            if filter_set.get("enterprise_id"):
+                vehicles: list = await self.uow.vehicle.find_all_filter_by_enterprise(filter_set)
+            else:
+                vehicles: list = await self.uow.vehicle.find_all()
             return [VehicleFromDB.model_validate(vehicle) for vehicle in vehicles]
 
     async def retrieve_vehicles(self, vehicle_id: int) -> VehicleFromDB:

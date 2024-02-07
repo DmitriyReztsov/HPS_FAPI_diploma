@@ -14,7 +14,7 @@ class DriverCreate(BaseModel):
     first_name: str
     last_name: str
     salary: int
-    enterpise_id: int
+    enterprise_id: int
 
     class Config:
         from_attributes = True

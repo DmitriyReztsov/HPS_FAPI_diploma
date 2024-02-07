@@ -2,7 +2,7 @@ from sqlalchemy import BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
-from app.db.models.associations import manager_enterprise_association_table
+from app.db.models.associations import user_enterprise_association_table
 
 
 class Enterprise(Base):
@@ -20,8 +20,8 @@ class Enterprise(Base):
         "Driver", back_populates="enterprise", uselist=True, lazy="immediate"
     )
 
-    managers: Mapped[list["Manager"]] = relationship(  # noqa F821 # type: ignore
-        "Manager", secondary=manager_enterprise_association_table, back_populates="enterprises"
+    users: Mapped[list["User"]] = relationship(  # noqa F821 # type: ignore
+        "User", secondary=user_enterprise_association_table, back_populates="enterprises"
     )
 
     def __str__(self):

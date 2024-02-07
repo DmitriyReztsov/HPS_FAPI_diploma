@@ -53,7 +53,7 @@ class Vehicle(Base):
     brandmodel_id: Mapped[int] = mapped_column(ForeignKey("vehiclemodel.id", ondelete="SET NULL"), nullable=True)
     brandmodel: Mapped[Optional["VehicleModel"]] = relationship(back_populates="vehicles")
 
-    enterpise_id: Mapped[int] = mapped_column(ForeignKey("enterprise.id", ondelete="SET NULL"), nullable=True)
+    enterprise_id: Mapped[int] = mapped_column(ForeignKey("enterprise.id", ondelete="SET NULL"), nullable=True)
     enterprise: Mapped["Enterprise"] = relationship("Enterprise", back_populates="vehicles")  # noqa F821 # type: ignore
 
     drivers: Mapped[list["DriverVehicle"]] = relationship(  # noqa F821 # type: ignore

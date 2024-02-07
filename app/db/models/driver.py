@@ -15,7 +15,7 @@ class Driver(Base):
     last_name: Mapped[str] = mapped_column(nullable=False)
     salary: Mapped[int] = mapped_column(BigInteger, nullable=True)
 
-    enterpise_id: Mapped[int] = mapped_column(ForeignKey("enterprise.id", ondelete="SET NULL"), nullable=True)
+    enterprise_id: Mapped[int] = mapped_column(ForeignKey("enterprise.id", ondelete="SET NULL"), nullable=True)
     enterprise: Mapped["Enterprise"] = relationship("Enterprise", back_populates="drivers")  # noqa F821 # type: ignore
 
     vehicles: Mapped[list["DriverVehicle"]] = relationship("DriverVehicle", back_populates="driver", lazy="immediate")

@@ -29,6 +29,12 @@ class Repository(AbstractRepository):
         result = await self.session.execute(select(self.model))
         return result.scalars().all()
 
+    async def find_all_filter_by_enterprise(self, filter_set: dict = None):
+        result = await self.session.execute(
+            select(self.model).where(self.model.enterprise_id.in_(filter_set.get("enterprise_id")))
+        )
+        return result.scalars().all()
+
     async def find_one(self, item_id: int):
         result = await self.session.execute(select(self.model).where(self.model.id == item_id))
         return result.scalar_one()

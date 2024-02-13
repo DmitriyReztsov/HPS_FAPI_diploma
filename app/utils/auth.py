@@ -35,3 +35,8 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 
 def get_token_payload(token):
     return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+
+
+def get_users_enterpises(current_user):
+    allowed_enterprises = [enterprise.id for enterprise in current_user.enterprises]
+    return {"enterprise_id": allowed_enterprises}

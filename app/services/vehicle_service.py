@@ -1,3 +1,6 @@
+from fastapi.exceptions import ValidationException
+
+from app.api.schemas.user import UserExtended
 from app.api.schemas.vehicle import VehicleCreate, VehicleFromDB, VehiclePartialUpdate
 from app.api.schemas.vehicle_brand import (
     VehicleBrandCreate,
@@ -9,6 +12,7 @@ from app.api.schemas.vehicle_model import (
     VehicleModelFromDB,
     VehicleModelPartialUpdate,
 )
+from app.utils.auth import get_users_enterpises
 from app.utils.unitofwork import IUnitOfWork
 
 
@@ -118,8 +122,23 @@ class VehicleService:
     def __init__(self, uow: IUnitOfWork):
         self.uow = uow
 
-    async def add_vehicle(self, vehicle_data: VehicleCreate) -> VehicleFromDB:
+    async def add_vehicle(
+        self,
+        vehicle_data: VehicleCreate,
+        current_user: UserExtended = None,
+    ) -> VehicleFromDB:
+        if not current_user:
+            return None
+
+        allowed_objects = get_users_enterpises(current_user)
         vehicle_dict: dict = vehicle_data.model_dump()
+        if current_user.role != "manager" or (
+            current_user.role == "manager"
+            and vehicle_dict["enterprise_id"]
+            and vehicle_dict["enterprise_id"] not in allowed_objects["enterprise_id"]
+        ):
+            raise ValidationException({"enterprise_id": "You are not allowed to create a vehicle for this enterprise"})
+
         async with self.uow:
             vehicle_from_db = await self.uow.vehicle.add_one(vehicle_dict)
             vehicle_to_return = VehicleFromDB.model_validate(vehicle_from_db)
@@ -128,21 +147,51 @@ class VehicleService:
             await self.uow.commit()
             return vehicle_to_return
 
-    async def get_vehicles(self, filter_set=None) -> list[VehicleFromDB]:
+    async def get_vehicles(self, current_user: UserExtended = None) -> list[VehicleFromDB]:
+        if not current_user:
+            return None
+
+        allowed_objects = get_users_enterpises(current_user)
         async with self.uow:
-            if filter_set.get("enterprise_id"):
-                vehicles: list = await self.uow.vehicle.find_all_filter_by_enterprise(filter_set)
-            else:
+            if allowed_objects.get("enterprise_id"):
+                vehicles: list = await self.uow.vehicle.find_all_filter_by_enterprise(allowed_objects)
+            elif current_user.role == "admin":
                 vehicles: list = await self.uow.vehicle.find_all()
+            else:
+                raise ValidationException({"enterprise_id": "You are not allowed to get vehicles for this enterprise"})
             return [VehicleFromDB.model_validate(vehicle) for vehicle in vehicles]
 
-    async def retrieve_vehicles(self, vehicle_id: int) -> VehicleFromDB:
+    async def retrieve_vehicles(self, vehicle_id: int, current_user: UserExtended = None) -> VehicleFromDB:
+        if not current_user:
+            return None
+
+        allowed_objects = get_users_enterpises(current_user)
         async with self.uow:
             vehicle = await self.uow.vehicle.find_one(vehicle_id)
+            if vehicle.enterprise_id and vehicle.enterprise_id not in allowed_objects["enterprise_id"]:
+                raise ValidationException(
+                    {"enterprise_id": "You are not allowed to update a vehicle for this enterprise"}
+                )
             return VehicleFromDB.model_validate(vehicle)
 
-    async def update_vehicle(self, vehicle_id: int, vehicle_data: VehicleCreate):
+    async def update_vehicle(
+        self,
+        vehicle_id: int,
+        vehicle_data: VehicleCreate,
+        current_user: UserExtended = None,
+    ):
+        if not current_user:
+            return None
+
+        allowed_objects = get_users_enterpises(current_user)
         vehicle_dict: dict = vehicle_data.model_dump()
+        if current_user.role != "manager" or (
+            current_user.role == "manager"
+            and vehicle_dict["enterprise_id"]
+            and vehicle_dict["enterprise_id"] not in allowed_objects["enterprise_id"]
+        ):
+            raise ValidationException({"enterprise_id": "You are not allowed to update a vehicle for this enterprise"})
+
         async with self.uow:
             vehicle_from_db = await self.uow.vehicle.update_one(vehicle_id, vehicle_dict)
             vehicle_to_return = VehicleFromDB.model_validate(vehicle_from_db)
@@ -150,7 +199,28 @@ class VehicleService:
             await self.uow.commit()
             return vehicle_to_return
 
-    async def partial_update_vehicle(self, vehicle_id: int, vehicle_data: VehiclePartialUpdate):
+    async def partial_update_vehicle(
+        self,
+        vehicle_id: int,
+        vehicle_data: VehiclePartialUpdate,
+        current_user: UserExtended = None,
+    ):
+        if not current_user:
+            return None
+
+        allowed_objects = get_users_enterpises(current_user)
+        async with self.uow:
+            vehicle = await self.uow.vehicle.find_one(vehicle_id)
+
+            if current_user.role != "manager" or (
+                current_user.role == "manager"
+                and vehicle.enterprise_id
+                and vehicle.enterprise_id not in allowed_objects["enterprise_id"]
+            ):
+                raise ValidationException(
+                    {"enterprise_id": "You are not allowed to update a vehicle for this enterprise"}
+                )
+
         vehicle_dict: dict = vehicle_data.model_dump(exclude_unset=True)
         async with self.uow:
             vehicle_from_db = await self.uow.vehicle.update_one(vehicle_id, vehicle_dict)
@@ -159,7 +229,27 @@ class VehicleService:
             await self.uow.commit()
             return vehicle_to_return
 
-    async def delete_vehicle(self, vehicle_id: int):
+    async def delete_vehicle(
+        self,
+        vehicle_id: int,
+        current_user: UserExtended = None,
+    ):
+        if not current_user:
+            return None
+
+        allowed_objects = get_users_enterpises(current_user)
+        async with self.uow:
+            vehicle = await self.uow.vehicle.find_one(vehicle_id)
+
+            if current_user.role != "manager" or (
+                current_user.role == "manager"
+                and vehicle.enterprise_id
+                and vehicle.enterprise_id not in allowed_objects["enterprise_id"]
+            ):
+                raise ValidationException(
+                    {"enterprise_id": "You are not allowed to delete a vehicle for this enterprise"}
+                )
+
         async with self.uow:
             vehicle_from_db = await self.uow.vehicle.delete_one(vehicle_id)
             vehicle_to_return = VehicleFromDB.model_validate(vehicle_from_db)

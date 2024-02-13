@@ -4,6 +4,7 @@ from app.api.schemas.enterprise import EnterpriseShort
 
 
 class UserFromDB(BaseModel):
+    id: int
     username: str
     email: EmailStr | None = None
     first_name: str | None = None

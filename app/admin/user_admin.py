@@ -19,5 +19,4 @@ class UserAdmin(ModelView, model=User):
         "first_name",
         "last_name",
         "enterprises",
-        "drivers",
     )

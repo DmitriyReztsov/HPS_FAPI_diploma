@@ -21,7 +21,7 @@ class Enterprise(Base):
     )
 
     users: Mapped[list["User"]] = relationship(  # noqa F821 # type: ignore
-        "User", secondary=user_enterprise_association_table, back_populates="enterprises"
+        "User", secondary=user_enterprise_association_table, back_populates="enterprises", lazy="immediate"
     )
 
     def __str__(self):

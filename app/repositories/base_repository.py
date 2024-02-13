@@ -35,6 +35,10 @@ class Repository(AbstractRepository):
         )
         return result.scalars().all()
 
+    async def find_all_filter_by_id(self, ids: list = None):
+        result = await self.session.execute(select(self.model).where(self.model.id.in_(ids)))
+        return result.scalars().all()
+
     async def find_one(self, item_id: int):
         result = await self.session.execute(select(self.model).where(self.model.id == item_id))
         return result.scalar_one()

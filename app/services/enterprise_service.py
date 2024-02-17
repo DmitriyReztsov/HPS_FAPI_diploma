@@ -23,7 +23,7 @@ class EnterpriseService:
 
         allowed_objects = get_users_enterpises(current_user)
         async with self.uow:
-            if allowed_objects.get("enterprise_id"):
+            if current_user.role == "manager" and allowed_objects.get("enterprise_id"):
                 enterprises: list = await self.uow.enterprise.find_all_filter_by_enterprise(allowed_objects)
             elif current_user.role == "admin":
                 enterprises: list = await self.uow.enterprise.find_all()
@@ -38,7 +38,7 @@ class EnterpriseService:
     ) -> EnterpriseFromDB:
         if not current_user:
             return None
-        if current_user.role != "manager":
+        if current_user.role not in ["admin", "manager"]:
             raise ValidationException({"enterprise_id": "You are not allowed to create a enterprise"})
 
         enterprise_dict: dict = enterprise_data.model_dump()
@@ -61,7 +61,7 @@ class EnterpriseService:
         allowed_objects = get_users_enterpises(current_user)
         async with self.uow:
             enterprise = await self.uow.enterprise.find_one(enterprise_id)
-            if current_user.role != "manager" or (
+            if current_user.role not in ["admin", "manager"] or (
                 current_user.role == "manager" and enterprise and enterprise.id not in allowed_objects["enterprise_id"]
             ):
                 raise ValidationException({"enterprise_id": "You are not allowed to retrieve a enterprise."})
@@ -77,7 +77,7 @@ class EnterpriseService:
             return None
 
         allowed_objects = get_users_enterpises(current_user)
-        if current_user.role != "manager" or (
+        if current_user.role not in ["admin", "manager"] or (
             current_user.role == "manager" and enterprise_id not in allowed_objects["enterprise_id"]
         ):
             raise ValidationException(
@@ -105,7 +105,7 @@ class EnterpriseService:
             return None
 
         allowed_objects = get_users_enterpises(current_user)
-        if current_user.role != "manager" or (
+        if current_user.role not in ["admin", "manager"] or (
             current_user.role == "manager" and enterprise_id not in allowed_objects["enterprise_id"]
         ):
             raise ValidationException(
@@ -136,7 +136,7 @@ class EnterpriseService:
             return None
 
         allowed_objects = get_users_enterpises(current_user)
-        if current_user.role != "manager" or (
+        if current_user.role not in ["admin", "manager"] or (
             current_user.role == "manager" and enterprise_id not in allowed_objects["enterprise_id"]
         ):
             raise ValidationException(

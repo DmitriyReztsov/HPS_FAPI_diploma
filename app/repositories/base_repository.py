@@ -26,13 +26,17 @@ class Repository(AbstractRepository):
         return res.scalar_one()
 
     async def find_all(self):
-        result = await self.session.execute(select(self.model))
+        stmt = select(self.model).order_by(self.model.id)
+        result = await self.session.execute(stmt)
         return result.scalars().all()
 
     async def find_all_filter_by_enterprise(self, filter_set: dict = None):
-        result = await self.session.execute(
-            select(self.model).where(self.model.enterprise_id.in_(filter_set.get("enterprise_id")))
+        stmt = (
+            select(self.model)
+            .where(self.model.enterprise_id.in_(filter_set.get("enterprise_id")))
+            .order_by(self.model.id)
         )
+        result = await self.session.execute(stmt)
         return result.scalars().all()
 
     async def find_all_filter_by_id(self, ids: list = None):

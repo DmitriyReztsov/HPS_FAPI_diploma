@@ -1,3 +1,4 @@
+import math
 from fastapi.exceptions import ValidationException
 
 from app.api.schemas.user import UserExtended
@@ -13,6 +14,7 @@ from app.api.schemas.vehicle_model import (
     VehicleModelPartialUpdate,
 )
 from app.utils.auth import get_users_enterpises
+from app.utils.pagination import PageParams, PagedResponseSchema
 from app.utils.unitofwork import IUnitOfWork
 
 
@@ -132,7 +134,7 @@ class VehicleService:
 
         allowed_objects = get_users_enterpises(current_user)
         vehicle_dict: dict = vehicle_data.model_dump()
-        if current_user.role != "manager" or (
+        if current_user.role not in ["admin", "manager"] or (
             current_user.role == "manager"
             and vehicle_dict["enterprise_id"]
             and vehicle_dict["enterprise_id"] not in allowed_objects["enterprise_id"]
@@ -147,19 +149,28 @@ class VehicleService:
             await self.uow.commit()
             return vehicle_to_return
 
-    async def get_vehicles(self, current_user: UserExtended = None) -> list[VehicleFromDB]:
+    async def get_vehicles(
+        self, current_user: UserExtended = None, page_params: PageParams = None
+    ) -> PagedResponseSchema[VehicleFromDB]:
         if not current_user:
             return None
 
         allowed_objects = get_users_enterpises(current_user)
         async with self.uow:
-            if allowed_objects.get("enterprise_id"):
+            if current_user.role == "manager" and allowed_objects.get("enterprise_id"):
                 vehicles: list = await self.uow.vehicle.find_all_filter_by_enterprise(allowed_objects)
             elif current_user.role == "admin":
                 vehicles: list = await self.uow.vehicle.find_all()
             else:
                 raise ValidationException({"enterprise_id": "You are not allowed to get vehicles for this enterprise"})
-            return [VehicleFromDB.model_validate(vehicle) for vehicle in vehicles]
+            from_index = page_params.page * page_params.size
+            to_index = (page_params.page + 1) * page_params.size
+            return PagedResponseSchema(
+                total=math.ceil(len(vehicles) / page_params.size) - 1,
+                page=page_params.page,
+                size=page_params.size,
+                results=[VehicleFromDB.model_validate(vehicle) for vehicle in vehicles[from_index:to_index]],
+            )
 
     async def retrieve_vehicles(self, vehicle_id: int, current_user: UserExtended = None) -> VehicleFromDB:
         if not current_user:
@@ -168,7 +179,11 @@ class VehicleService:
         allowed_objects = get_users_enterpises(current_user)
         async with self.uow:
             vehicle = await self.uow.vehicle.find_one(vehicle_id)
-            if vehicle.enterprise_id and vehicle.enterprise_id not in allowed_objects["enterprise_id"]:
+            if current_user.role not in ["admin", "manager"] or (
+                current_user.role == "manager"
+                and vehicle.enterprise_id
+                and vehicle.enterprise_id not in allowed_objects["enterprise_id"]
+            ):
                 raise ValidationException(
                     {"enterprise_id": "You are not allowed to update a vehicle for this enterprise"}
                 )
@@ -185,7 +200,7 @@ class VehicleService:
 
         allowed_objects = get_users_enterpises(current_user)
         vehicle_dict: dict = vehicle_data.model_dump()
-        if current_user.role != "manager" or (
+        if current_user.role not in ["admin", "manager"] or (
             current_user.role == "manager"
             and vehicle_dict["enterprise_id"]
             and vehicle_dict["enterprise_id"] not in allowed_objects["enterprise_id"]
@@ -212,7 +227,7 @@ class VehicleService:
         async with self.uow:
             vehicle = await self.uow.vehicle.find_one(vehicle_id)
 
-            if current_user.role != "manager" or (
+            if current_user.role not in ["admin", "manager"] or (
                 current_user.role == "manager"
                 and vehicle.enterprise_id
                 and vehicle.enterprise_id not in allowed_objects["enterprise_id"]
@@ -241,7 +256,7 @@ class VehicleService:
         async with self.uow:
             vehicle = await self.uow.vehicle.find_one(vehicle_id)
 
-            if current_user.role != "manager" or (
+            if current_user.role not in ["admin", "manager"] or (
                 current_user.role == "manager"
                 and vehicle.enterprise_id
                 and vehicle.enterprise_id not in allowed_objects["enterprise_id"]

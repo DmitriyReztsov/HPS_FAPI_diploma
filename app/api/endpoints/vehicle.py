@@ -1,3 +1,4 @@
+from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.exceptions import ValidationException
 from sqlalchemy.exc import NoResultFound
@@ -6,6 +7,7 @@ from app.api.endpoints.user import get_current_active_user
 from app.api.schemas.user import UserExtended
 from app.api.schemas.vehicle import VehicleCreate, VehicleFromDB, VehiclePartialUpdate
 from app.services.vehicle_service import VehicleService
+from app.utils.pagination import PagedResponseSchema, PageParams
 from app.utils.unitofwork import IUnitOfWork, UnitOfWork
 
 vehicle_router = APIRouter(prefix="/vehicle", tags=["Vehicle"])
@@ -15,14 +17,15 @@ async def get_vehicle_service(uow: IUnitOfWork = Depends(UnitOfWork)) -> Vehicle
     return VehicleService(uow)
 
 
-@vehicle_router.get("/vehicles/", response_model=list[VehicleFromDB])
+@vehicle_router.get("/vehicles/", response_model=PagedResponseSchema[VehicleFromDB])
 async def get_vehicles(
     vehicle_service: VehicleService = Depends(get_vehicle_service),
     current_user: UserExtended = Depends(get_current_active_user),
+    page_params: PageParams = Depends(),
 ):
     if current_user.role is None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You should have a role in a compmany.")
-    return await vehicle_service.get_vehicles(current_user)
+    return await vehicle_service.get_vehicles(current_user, page_params)
 
 
 @vehicle_router.get("/vehicles/{vehicle_id}", response_model=VehicleFromDB)
@@ -43,7 +46,7 @@ async def retrieve_vehicle(
 
 @vehicle_router.post("/vehicles/", response_model=VehicleFromDB, status_code=status.HTTP_201_CREATED)
 async def create_vehicle(
-    vehicle_data: VehicleCreate,
+    vehicle_data: Annotated[VehicleCreate, Depends()],
     vehicle_service: VehicleService = Depends(get_vehicle_service),
     current_user: UserExtended = Depends(get_current_active_user),
 ):

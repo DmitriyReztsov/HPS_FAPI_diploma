@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Body, Depends, HTTPException, status
 from fastapi.exceptions import ValidationException
 from sqlalchemy.exc import NoResultFound
 
@@ -46,7 +46,7 @@ async def retrieve_vehicle(
 
 @vehicle_router.post("/vehicles/", response_model=VehicleFromDB, status_code=status.HTTP_201_CREATED)
 async def create_vehicle(
-    vehicle_data: Annotated[VehicleCreate, Depends()],
+    vehicle_data: Annotated[VehicleCreate, Body()],
     vehicle_service: VehicleService = Depends(get_vehicle_service),
     current_user: UserExtended = Depends(get_current_active_user),
 ):
@@ -61,7 +61,7 @@ async def create_vehicle(
 @vehicle_router.put("/vehicles/{vehicle_id}", response_model=VehicleFromDB)
 async def update_vehicle(
     vehicle_id: int,
-    vehicle_data: VehicleCreate,
+    vehicle_data: Annotated[VehicleCreate, Body()],
     vehicle_service: VehicleService = Depends(get_vehicle_service),
     current_user: UserExtended = Depends(get_current_active_user),
 ):
@@ -78,7 +78,7 @@ async def update_vehicle(
 @vehicle_router.patch("/vehicles/{vehicle_id}", response_model=VehicleFromDB)
 async def partial_update_vehicle(
     vehicle_id: int,
-    vehicle_data: VehiclePartialUpdate,
+    vehicle_data: Annotated[VehiclePartialUpdate, Body()],
     vehicle_service: VehicleService = Depends(get_vehicle_service),
     current_user: UserExtended = Depends(get_current_active_user),
 ):

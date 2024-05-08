@@ -31,7 +31,7 @@ class VehicleModel(Base):
     fuel_capacity: Mapped[int] = mapped_column(nullable=False)
 
     brand_id: Mapped[int] = mapped_column(ForeignKey("vehiclebrand.id", ondelete="CASCADE"))
-    brand: Mapped[Optional["VehicleBrand"]] = relationship(back_populates="models", lazy="immediate")
+    brand: Mapped[Optional["VehicleBrand"]] = relationship(back_populates="models", lazy="joined")
 
     vehicles: Mapped[list["Vehicle"]] = relationship(back_populates="brandmodel")
 
@@ -51,10 +51,12 @@ class Vehicle(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.now)
 
     brandmodel_id: Mapped[int] = mapped_column(ForeignKey("vehiclemodel.id", ondelete="SET NULL"), nullable=True)
-    brandmodel: Mapped[Optional["VehicleModel"]] = relationship(back_populates="vehicles")
+    brandmodel: Mapped[Optional["VehicleModel"]] = relationship(back_populates="vehicles", lazy="immediate")
 
     enterprise_id: Mapped[int] = mapped_column(ForeignKey("enterprise.id", ondelete="SET NULL"), nullable=True)
-    enterprise: Mapped["Enterprise"] = relationship("Enterprise", back_populates="vehicles")  # noqa F821 # type: ignore
+    enterprise: Mapped["Enterprise"] = relationship(  # noqa F821 # type: ignore
+        "Enterprise", back_populates="vehicles", lazy="immediate"
+    )
 
     drivers: Mapped[list["DriverVehicle"]] = relationship(  # noqa F821 # type: ignore
         "DriverVehicle", back_populates="vehicle"

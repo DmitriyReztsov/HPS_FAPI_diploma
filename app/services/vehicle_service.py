@@ -1,4 +1,5 @@
 import math
+
 from fastapi.exceptions import ValidationException
 
 from app.api.schemas.user import UserExtended
@@ -9,12 +10,13 @@ from app.api.schemas.vehicle_brand import (
     VehicleBrandPartialUpdate,
 )
 from app.api.schemas.vehicle_model import (
+    VehicleBrandModel,
     VehicleModelCreate,
     VehicleModelFromDB,
     VehicleModelPartialUpdate,
 )
 from app.utils.auth import get_users_enterpises
-from app.utils.pagination import PageParams, PagedResponseSchema
+from app.utils.pagination import PagedResponseSchema, PageParams
 from app.utils.unitofwork import IUnitOfWork
 
 
@@ -85,8 +87,21 @@ class VehicleModelService:
 
     async def get_vehicle_models(self) -> list[VehicleModelFromDB]:
         async with self.uow:
-            vehicle_models: list = await self.uow.vehiclemodel.find_all()
+            vehicle_models: list = await self.uow.vehiclemodel.find_all_brandmodels()
             return [VehicleModelFromDB.model_validate(vehicle_model) for vehicle_model in vehicle_models]
+
+    async def get_vehicle_brandmodels(self) -> list[VehicleBrandModel]:
+        async with self.uow:
+            vehicle_brandmodels: list = await self.uow.vehiclemodel.find_all_brandmodels()
+            brandmodels_list = []
+            for vehicle_brandmodel in vehicle_brandmodels:
+                brandmodel = VehicleBrandModel(
+                    id=vehicle_brandmodel.id,
+                    exact_model_name=vehicle_brandmodel.exact_model_name,
+                    brand_name=vehicle_brandmodel.brand.brand_name,
+                )
+                brandmodels_list.append(brandmodel)
+            return brandmodels_list
 
     async def retrieve_vehicle_models(self, vehicle_model_id: int) -> VehicleModelFromDB:
         async with self.uow:
@@ -142,11 +157,13 @@ class VehicleService:
             raise ValidationException({"enterprise_id": "You are not allowed to create a vehicle for this enterprise"})
 
         async with self.uow:
-            vehicle_from_db = await self.uow.vehicle.add_one(vehicle_dict)
-            vehicle_to_return = VehicleFromDB.model_validate(vehicle_from_db)
-
+            vehicle_created = await self.uow.vehicle.add_one(vehicle_dict)
             # если ранее возникнет ошибка при создании объектов, то изменения не сохранятся и откатятся
             await self.uow.commit()
+
+            vehicle_from_db = await self.uow.vehicle.find_one(vehicle_created)
+            vehicle_to_return = VehicleFromDB.model_validate(vehicle_from_db)
+
             return vehicle_to_return
 
     async def get_vehicles(
@@ -158,9 +175,9 @@ class VehicleService:
         allowed_objects = get_users_enterpises(current_user)
         async with self.uow:
             if current_user.role == "manager" and allowed_objects.get("enterprise_id"):
-                vehicles: list = await self.uow.vehicle.find_all_filter_by_enterprise(allowed_objects)
+                vehicles: list = await self.uow.vehicle.find_all_with_brandmodel_filter_by_enterprise(allowed_objects)
             elif current_user.role == "admin":
-                vehicles: list = await self.uow.vehicle.find_all()
+                vehicles: list = await self.uow.vehicle.find_all_with_brandmodel()
             else:
                 raise ValidationException({"enterprise_id": "You are not allowed to get vehicles for this enterprise"})
             from_index = page_params.page * page_params.size

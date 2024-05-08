@@ -4,6 +4,7 @@ from app.api.schemas.enterprise import (
     EnterpriseCreate,
     EnterpriseFromDB,
     EnterprisePartialUpdate,
+    EnterpriseShort,
 )
 from app.api.schemas.user import UserExtended
 from app.utils.auth import get_users_enterpises
@@ -30,6 +31,23 @@ class EnterpriseService:
             else:
                 raise ValidationException({"enterprise_id": "You are not allowed to get enterprises."})
             return [EnterpriseFromDB.model_validate(enterprise) for enterprise in enterprises]
+
+    async def get_enterprises_short(
+        self,
+        current_user: UserExtended = None,
+    ) -> list[EnterpriseShort]:
+        if not current_user:
+            return None
+
+        allowed_objects = get_users_enterpises(current_user)
+        async with self.uow:
+            if current_user.role == "manager" and allowed_objects.get("enterprise_id"):
+                enterprises: list = await self.uow.enterprise.find_all_filter_by_enterprise(allowed_objects)
+            elif current_user.role == "admin":
+                enterprises: list = await self.uow.enterprise.find_all()
+            else:
+                raise ValidationException({"enterprise_id": "You are not allowed to get enterprises."})
+            return [EnterpriseShort.model_validate(enterprise) for enterprise in enterprises]
 
     async def add_enterprise(
         self,

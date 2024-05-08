@@ -1,5 +1,7 @@
 from pydantic import BaseModel, ConfigDict
 
+from app.api.schemas.vehicle_brand import VehicleBrandFromDB
+
 
 class VehicleModelCreate(BaseModel):
     brand_id: int  # id of brand name
@@ -23,8 +25,14 @@ class VehicleModelPartialUpdate(BaseModel):
 
 
 class VehicleModelFromDB(VehicleModelCreate):
+    id: int
     exact_model_name: str | None
+    brand: VehicleBrandFromDB
 
     model_config = ConfigDict(from_attributes=True)
 
+
+class VehicleBrandModel(BaseModel):
     id: int
+    brand_name: str
+    exact_model_name: str

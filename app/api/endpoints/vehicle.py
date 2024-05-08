@@ -1,4 +1,5 @@
 from typing import Annotated
+
 from fastapi import APIRouter, Body, Depends, HTTPException, status
 from fastapi.exceptions import ValidationException
 from sqlalchemy.exc import NoResultFound

@@ -2,6 +2,20 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict
 
+from app.api.schemas.vehicle_model import VehicleModelFromDB
+
+# from app.api.schemas.enterprise import EnterpriseShort
+
+
+class VehicleEnterprise(BaseModel):
+    id: int
+    company_name: str
+    company_address: str
+    contact_email: str
+
+    class Config:
+        from_attributes = True
+
 
 class VehicleCreate(BaseModel):
     brandmodel_id: int
@@ -31,3 +45,5 @@ class VehicleFromDB(VehicleCreate):
 
     id: int
     created_at: datetime
+    brandmodel: VehicleModelFromDB
+    enterprise: VehicleEnterprise | None

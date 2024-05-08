@@ -7,6 +7,7 @@ from app.api.schemas.enterprise import (
     EnterpriseCreate,
     EnterpriseFromDB,
     EnterprisePartialUpdate,
+    EnterpriseShort,
 )
 from app.api.schemas.user import UserExtended
 from app.services.enterprise_service import EnterpriseService
@@ -17,6 +18,16 @@ enterprise_router = APIRouter(prefix="/enterprise", tags=["Enterprise"])
 
 async def get_enterprise_service(uow: IUnitOfWork = Depends(UnitOfWork)) -> EnterpriseService:
     return EnterpriseService(uow)
+
+
+@enterprise_router.get("/enterprises/short/", response_model=list[EnterpriseShort])
+async def get_enterprises_short(
+    enterprise_service: EnterpriseService = Depends(get_enterprise_service),
+    current_user: str = Depends(get_current_active_user),
+):
+    if current_user.role is None:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You should have a role in a compmany.")
+    return await enterprise_service.get_enterprises_short(current_user)
 
 
 @enterprise_router.get("/enterprises/", response_model=list[EnterpriseFromDB])

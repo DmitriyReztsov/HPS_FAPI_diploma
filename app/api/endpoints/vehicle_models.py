@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.exc import NoResultFound
 
 from app.api.schemas.vehicle_model import (
+    VehicleBrandModel,
     VehicleModelCreate,
     VehicleModelFromDB,
     VehicleModelPartialUpdate,
@@ -14,6 +15,11 @@ vehicle_model_router = APIRouter(prefix="/vehicle_model", tags=["VehicleModel"])
 
 async def get_vehicle_model_service(uow: IUnitOfWork = Depends(UnitOfWork)) -> VehicleModelService:
     return VehicleModelService(uow)
+
+
+@vehicle_model_router.get("/vehicle_models/brandmodel/", response_model=list[VehicleBrandModel])
+async def get_vehicle_brandmodels(vehicle_model_service: VehicleModelService = Depends(get_vehicle_model_service)):
+    return await vehicle_model_service.get_vehicle_brandmodels()
 
 
 @vehicle_model_router.get("/vehicle_models/", response_model=list[VehicleModelFromDB])

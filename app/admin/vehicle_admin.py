@@ -1,4 +1,7 @@
+import pytz
+from typing import Any
 from sqladmin import ModelView
+from starlette.requests import Request
 
 from app.db.models import Vehicle, VehicleBrand, VehicleModel
 
@@ -21,9 +24,24 @@ class VehicleAdmin(ModelView, model=Vehicle):
         "manufactured_year",
         "mileage",
         "cost",
+        "purchase_datetime",
         "created_at",
     )
     form_excluded_columns = ("drivers",)
+
+    async def on_model_change(self, data: dict, model: Any, is_created: bool, request: Request) -> None:
+        """Perform some actions before a model is created or updated.
+        By default does nothing.
+        """
+        from main import SERVER_TIME_ZONE
+
+        incomming_purchase_datetime = data.get("purchase_datetime")
+
+        if not incomming_purchase_datetime:
+            return None
+
+        default_timezone = pytz.timezone(SERVER_TIME_ZONE)
+        data["purchase_datetime"] = incomming_purchase_datetime.replace(tzinfo=default_timezone)
 
 
 class VehicleBrandAdmin(ModelView, model=VehicleBrand):

@@ -2,7 +2,7 @@ version: "1.0"
 services:
   db:
     container_name: db
-    image: postgres:16.1
+    image: postgis/postgis:16-3.4
     restart: always
     environment:
       POSTGRES_DB: "fastapidb"

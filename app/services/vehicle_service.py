@@ -148,7 +148,7 @@ class VehicleService:
             return None
 
         allowed_objects = get_users_enterpises(current_user)
-        vehicle_dict: dict = vehicle_data.model_dump()
+        vehicle_dict: dict = vehicle_data.model_dump_with_tz_align()
         if current_user.role not in ["admin", "manager"] or (
             current_user.role == "manager"
             and vehicle_dict["enterprise_id"]
@@ -186,7 +186,10 @@ class VehicleService:
                 total=math.ceil(len(vehicles) / page_params.size) - 1,
                 page=page_params.page,
                 size=page_params.size,
-                results=[VehicleFromDB.model_validate(vehicle) for vehicle in vehicles[from_index:to_index]],
+                results=[
+                    VehicleFromDB.model_validate_datetime_with_tz(vehicle, vehicle.enterprise.company_timezone.value)
+                    for vehicle in vehicles[from_index:to_index]
+                ],
             )
 
     async def retrieve_vehicles(self, vehicle_id: int, current_user: UserExtended = None) -> VehicleFromDB:
@@ -204,7 +207,7 @@ class VehicleService:
                 raise ValidationException(
                     {"enterprise_id": "You are not allowed to update a vehicle for this enterprise"}
                 )
-            return VehicleFromDB.model_validate(vehicle)
+            return VehicleFromDB.model_validate_datetime_with_tz(vehicle, vehicle.enterprise.company_timezone.value)
 
     async def update_vehicle(
         self,
@@ -216,7 +219,7 @@ class VehicleService:
             return None
 
         allowed_objects = get_users_enterpises(current_user)
-        vehicle_dict: dict = vehicle_data.model_dump()
+        vehicle_dict: dict = vehicle_data.model_dump_with_tz_align()
         if current_user.role not in ["admin", "manager"] or (
             current_user.role == "manager"
             and vehicle_dict["enterprise_id"]
@@ -252,8 +255,9 @@ class VehicleService:
                 raise ValidationException(
                     {"enterprise_id": "You are not allowed to update a vehicle for this enterprise"}
                 )
+            company_tz = vehicle.enterprise.company_timezone.value
 
-        vehicle_dict: dict = vehicle_data.model_dump(exclude_unset=True)
+        vehicle_dict: dict = vehicle_data.model_dump_with_tz_align(tz=company_tz, exclude_unset=True)
         async with self.uow:
             vehicle_from_db = await self.uow.vehicle.update_one(vehicle_id, vehicle_dict)
             vehicle_to_return = VehicleFromDB.model_validate(vehicle_from_db)

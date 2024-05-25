@@ -46,6 +46,7 @@ class Vehicle(Base):
     description: Mapped[str] = mapped_column(Text, nullable=True)
     cost: Mapped[int] = mapped_column(BigInteger, nullable=True)
     manufactured_year: Mapped[int] = mapped_column(nullable=False)
+    purchase_datetime: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
     mileage: Mapped[int] = mapped_column(BigInteger, nullable=False)
     is_in_work: Mapped[bool] = mapped_column(default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.now)

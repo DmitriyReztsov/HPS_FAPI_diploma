@@ -44,6 +44,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Timezone setting for server
+SERVER_TIME_ZONE = "UTC"
+
 if __name__ == "__main__":
     uvicorn.run(
         app="main:app",

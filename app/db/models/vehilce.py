@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
+from geoalchemy2 import Geometry
 from sqlalchemy import BigInteger, DateTime, ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -56,12 +57,29 @@ class Vehicle(Base):
 
     enterprise_id: Mapped[int] = mapped_column(ForeignKey("enterprise.id", ondelete="SET NULL"), nullable=True)
     enterprise: Mapped["Enterprise"] = relationship(  # noqa F821 # type: ignore
-        "Enterprise", back_populates="vehicles", lazy="immediate"
+        "Enterprise", back_populates="vehicles", lazy="joined"
     )
 
     drivers: Mapped[list["DriverVehicle"]] = relationship(  # noqa F821 # type: ignore
         "DriverVehicle", back_populates="vehicle"
     )
 
+    trackpoints: Mapped[list["VehicleTrackPoint"]] = relationship(back_populates="vehicle")
+
     def __str__(self) -> str:
         return f"{self.id} {'OK' if self.is_in_work else 'NOK'}"
+
+
+class VehicleTrackPoint(Base):
+    __tablename__ = "vehicletrackpoint"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    date_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    geotag: Mapped[list[float]] = mapped_column(Geometry("POINT"))
+
+    vehicle_id: Mapped[int] = mapped_column(ForeignKey("vehicle.id", ondelete="CASCADE"), nullable=False)
+    vehicle: Mapped[Optional["Vehicle"]] = relationship(back_populates="trackpoints", lazy="immediate")
+
+    @property
+    def repr_geotag(self) -> str:
+        return "To be implemented..."

@@ -14,6 +14,7 @@ from app.db.models import (  # noqa E402
     Vehicle,
     VehicleBrand,
     VehicleModel,
+    VehicleTrackPoint,
     Enterprise,
     Driver,
     User,

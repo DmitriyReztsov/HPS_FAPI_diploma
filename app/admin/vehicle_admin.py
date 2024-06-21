@@ -1,9 +1,10 @@
-import pytz
 from typing import Any
+
+import pytz
 from sqladmin import ModelView
 from starlette.requests import Request
 
-from app.db.models import Vehicle, VehicleBrand, VehicleModel
+from app.db.models import Vehicle, VehicleBrand, VehicleModel, VehicleTrackPoint
 
 
 class VehicleAdmin(ModelView, model=Vehicle):
@@ -60,3 +61,18 @@ class VehicleModelAdmin(ModelView, model=VehicleModel):
         VehicleModel.brand: "Model brand",
     }
     column_list = [VehicleModel.id, VehicleModel.exact_model_name, VehicleModel.brand]
+
+
+class VehicleTrackPointAdmin(ModelView, model=VehicleTrackPoint):
+    column_labels = {
+        VehicleTrackPoint.id: "id",
+        VehicleTrackPoint.date_time: "Set date_time",
+        "repr_geotag": "Geotag",
+        VehicleTrackPoint.vehicle: "Vehicle",
+    }
+    column_list = [
+        VehicleTrackPoint.id,
+        VehicleTrackPoint.date_time,
+        "repr_geotag",
+        VehicleTrackPoint.vehicle,
+    ]

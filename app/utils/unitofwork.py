@@ -8,6 +8,7 @@ from app.repositories.vehicle_repository import (
     VehicleBrandRepository,
     VehicleModelRepository,
     VehicleRepository,
+    VehicleTrackPointRepository,
 )
 
 
@@ -15,6 +16,7 @@ class IUnitOfWork(ABC):
     vehicle: VehicleRepository
     vehiclebrand: VehicleBrandRepository
     vehiclemodel: VehicleModelRepository
+    vehicletrackpoint: VehicleTrackPointRepository
     driver: DriverRepository
     enterprise: EnterpriseRepository
     user: UserRepository
@@ -45,6 +47,7 @@ class UnitOfWork(IUnitOfWork):
         self.vehicle = VehicleRepository(self.session)
         self.vehiclebrand = VehicleBrandRepository(self.session)
         self.vehiclemodel = VehicleModelRepository(self.session)
+        self.vehicletrackpoint = VehicleTrackPointRepository(self.session)
         self.driver = DriverRepository(self.session)
         self.enterprise = EnterpriseRepository(self.session)
         self.user = UserRepository(self.session)

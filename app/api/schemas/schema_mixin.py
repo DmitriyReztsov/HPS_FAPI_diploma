@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from pytz import timezone
 
 
@@ -15,7 +16,6 @@ class SchemaMixin:
                     new_value = value.astimezone(tz=timezone(tz))
                 case _:
                     continue
-
             setattr(obj, field, new_value)
         return obj
 

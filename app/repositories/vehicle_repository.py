@@ -100,7 +100,6 @@ class VehicleTrackPointRepository(Repository):
             select(self.model)
             .join(Vehicle, self.model.vehicle_id == Vehicle.id)
             .where(and_(*filters_list))
-            .where(Vehicle.enterprise_id.in_(allowed_objects.get("enterprise_id")))
             .order_by(self.model.id)
         )
         result = await self.session.execute(stmt)

@@ -1,13 +1,22 @@
 from collections import defaultdict
+from datetime import datetime, timedelta
 from random import randint
 from typing import Annotated
+from zoneinfo import ZoneInfo
 
 import typer
-from sqlalchemy import create_engine, insert, select, update, delete
+from sqlalchemy import create_engine, delete, insert, select, update
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.db.models import Driver, Vehicle, VehicleModel, DriverVehicle
+from app.db.models import (
+    Driver,
+    DriverVehicle,
+    Vehicle,
+    VehicleModel,
+    VehicleTrackPoint,
+)
+from manage.generate_routes_points import generate_route
 
 engine = create_engine(settings.DATABASE_URL)
 
@@ -105,6 +114,30 @@ def create_vehicle(
         stmt = insert(DriverVehicle).values(vehicle_driver_bulk_list).returning(DriverVehicle)
         result = session.execute(stmt)
         session.commit()
+
+
+@app.command()
+def generate_track_points(
+    vehicle_id: Annotated[int, typer.Option(help=("Vehicle ID, track ponts should be generated for."))],
+    radius: Annotated[int, typer.Option(help=("Track pont radius."))] = None,
+):
+    coords = ([13.384116, 52.533558], [13.428726, 52.519355])
+    points_dict = generate_route(*coords, radius)
+
+    with Session(engine) as session:
+        bulk_points_list = []
+        time_now = datetime.now(tz=ZoneInfo("UTC"))
+        for time_offset, point in points_dict.items():
+            data = {
+                "date_time": time_now + timedelta(seconds=(10 * time_offset)),
+                "geotag": f"POINT({point.longitude} {point.latitude})",
+                "vehicle_id": vehicle_id,
+            }
+            bulk_points_list.append(data)
+        stmt = insert(VehicleTrackPoint).values(bulk_points_list).returning(VehicleTrackPoint)
+        result = session.execute(stmt)
+        session.commit()
+        result.scalars().all()
 
 
 if __name__ == "__main__":

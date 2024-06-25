@@ -162,3 +162,5 @@ cython_debug/
 # my addings
 dvenv
 .vscode/settings.json
+route_points.txt
+try_routes.py

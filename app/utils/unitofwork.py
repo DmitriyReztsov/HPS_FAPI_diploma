@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from app.db.database import async_session_maker
 from app.repositories.driver_repository import DriverRepository
 from app.repositories.enterprise_repository import EnterpriseRepository
+from app.repositories.trip_repository import TripRepository
 from app.repositories.user_repository import UserRepository
 from app.repositories.vehicle_repository import (
     VehicleBrandRepository,
@@ -20,6 +21,7 @@ class IUnitOfWork(ABC):
     driver: DriverRepository
     enterprise: EnterpriseRepository
     user: UserRepository
+    trip: TripRepository
 
     @abstractmethod
     def __init__(self): ...
@@ -51,6 +53,7 @@ class UnitOfWork(IUnitOfWork):
         self.driver = DriverRepository(self.session)
         self.enterprise = EnterpriseRepository(self.session)
         self.user = UserRepository(self.session)
+        self.trip = TripRepository(self.session)
 
     async def __aexit__(self, *args):
         await self.rollback()

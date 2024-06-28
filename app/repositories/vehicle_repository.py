@@ -1,4 +1,4 @@
-from sqlalchemy import and_, insert, select
+from sqlalchemy import and_, insert, or_, select
 
 from app.db.models import (
     Enterprise,
@@ -96,6 +96,34 @@ class VehicleTrackPointRepository(Repository):
             match filter_name, filter_value:
                 case "vehicle_id", value if value is not None:
                     filters_list.append(self.model.vehicle_id == filter_value)
+        stmt = (
+            select(self.model)
+            .join(Vehicle, self.model.vehicle_id == Vehicle.id)
+            .where(and_(*filters_list))
+            .order_by(self.model.id)
+        )
+        result = await self.session.execute(stmt)
+        return result.scalars().all()
+
+    async def find_all_between_datetimes(self, filter_set: dict, allowed_objects: dict = None):
+        def check_for_int(prop_int: str):
+            try:
+                int(prop_int)
+                return True
+            except ValueError:
+                return False
+
+        filters_list = []
+        or_filters = []
+        if allowed_objects is not None:
+            filters_list.append(Vehicle.enterprise_id.in_(allowed_objects.get("enterprise_id")))
+        for filter_name, filter_value in filter_set.items():
+            match filter_name.split("_"), filter_value:
+                case ["vehicle", "id"], value if value is not None:
+                    filters_list.append(self.model.vehicle_id == filter_value)
+                case ["date", "time", prop_id], value if value is not None and check_for_int(prop_id):
+                    or_filters.append(self.model.date_time.between(*value))
+        filters_list.append(or_(*or_filters))
         stmt = (
             select(self.model)
             .join(Vehicle, self.model.vehicle_id == Vehicle.id)

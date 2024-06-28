@@ -66,6 +66,8 @@ class Vehicle(Base):
 
     trackpoints: Mapped[list["VehicleTrackPoint"]] = relationship(back_populates="vehicle")
 
+    trips: Mapped[list["Trip"]] = relationship(back_populates="vehicle")  # noqa F821 # type: ignore
+
     def __str__(self) -> str:
         return f"{self.id} {'OK' if self.is_in_work else 'NOK'}"
 

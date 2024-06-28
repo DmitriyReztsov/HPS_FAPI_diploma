@@ -15,6 +15,7 @@ from app.api.endpoints import (
     vehicle_model_router,
     vehicle_router,
     vehicle_track_point_router,
+    trip_router,
 )
 from app.db.database import engine
 
@@ -30,6 +31,7 @@ admin.add_view(EnterpriseAdmin)
 admin.add_view(DriverVehicleAdmin)
 
 app.include_router(vehicle_router)
+app.include_router(trip_router)
 app.include_router(vehicle_brand_router)
 app.include_router(vehicle_model_router)
 app.include_router(vehicle_track_point_router)

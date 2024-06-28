@@ -11,13 +11,14 @@ sys.path.append(os.path.join(sys.path[0], "app"))
 from app.core.config import settings  # noqa E402
 from app.db.database import Base  # noqa E402
 from app.db.models import (  # noqa E402
+    Driver,
+    Enterprise,
+    Trip,
+    User,
     Vehicle,
     VehicleBrand,
     VehicleModel,
     VehicleTrackPoint,
-    Enterprise,
-    Driver,
-    User,
     user_enterprise_association_table,
 )
 

@@ -6,7 +6,7 @@ from fastapi.exceptions import ValidationException
 from sqlalchemy.exc import NoResultFound
 
 from app.api.endpoints.user import get_current_active_user
-from app.api.schemas.trip import TripCreate, TripFromDB
+from app.api.schemas.trip import TripCreate, TripFromDB, TripFromDBWithExtraData
 from app.api.schemas.user import UserExtended
 from app.api.schemas.vehicle_track_point import (
     VehicleTrackPoint,
@@ -48,6 +48,20 @@ async def get_trips_with_track_by_vehicle(
     if current_user.role is None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You should have a role in a compmany.")
     return await trip_service.get_trips_points_by_vehicle(current_user, vehicle_id, from_date, till_date, geojson)
+
+
+@trip_router.get("/trips/by_vehicle/", response_model=list[TripFromDBWithExtraData])
+async def get_trips_by_vehicle(
+    trip_service: TripService = Depends(get_trip_service),
+    current_user: UserExtended = Depends(get_current_active_user),
+    vehicle_id: int = None,
+    from_date: datetime = None,
+    till_date: datetime = None,
+    geojson: bool = False,
+) -> list[TripFromDBWithExtraData]:
+    if current_user.role is None:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You should have a role in a compmany.")
+    return await trip_service.get_trips_by_vehicle(current_user, vehicle_id, from_date, till_date, geojson)
 
 
 @trip_router.get("/trips/{trip_id}", response_model=TripFromDB)

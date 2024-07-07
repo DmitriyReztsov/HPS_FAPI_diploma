@@ -4,6 +4,10 @@ from geopy.geocoders import Nominatim
 from pydantic import BaseModel, ConfigDict
 
 
+class TripPointsForMap(BaseModel):
+    trip_ids: list
+
+
 class TripCreate(BaseModel):
     start_date_time: datetime
     finish_date_time: datetime

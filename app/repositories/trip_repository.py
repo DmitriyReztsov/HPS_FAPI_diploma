@@ -19,6 +19,8 @@ class TripRepository(Repository):
                     filters_list.append(self.model.start_date_time >= filter_value)
                 case "till_date", value if value is not None:
                     filters_list.append(self.model.finish_date_time <= filter_value)
+                case "trip_ids", value if value is not None and isinstance(value, list):
+                    filters_list.append(self.model.id.in_(value))
         stmt = (
             select(self.model)
             .join(Vehicle, self.model.vehicle_id == Vehicle.id)

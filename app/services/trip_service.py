@@ -1,11 +1,13 @@
 from datetime import datetime
 
+import folium
 from fastapi.exceptions import ValidationException
 
 from app.api.schemas.trip import (
     TripCreate,
     TripFromDB,
     TripFromDBWithExtraData,
+    TripPointsForMap,
     get_address_by_point,
 )
 from app.api.schemas.user import UserExtended
@@ -169,3 +171,34 @@ class TripService:
                 )
                 list_to_return.append(trip_to_represent)
             return list_to_return
+
+    async def create_map(self, vehicle_id: int, trip_ids: TripPointsForMap) -> None:
+        filter_set = {
+            "vehicle_id": vehicle_id,
+            "trip_ids": list(map(int, trip_ids.trip_ids)),
+        }
+        async with self.uow:
+            trips = await self.uow.trip.find_all_with_filters(filter_set)
+            points_lists = []
+            for trip in trips:
+                trips_date_time_dict = {"vehicle_id": vehicle_id}
+                trips_date_time_dict[f"date_time_{trip.id}"] = (trip.start_date_time, trip.finish_date_time)
+                track_points = await self.uow.vehicletrackpoint.find_all_between_datetimes(trips_date_time_dict)
+                serializer = from_geo_point_to_lat_long
+                points_list = []
+                for tp_db in track_points:
+                    tp = serializer(tp_db)
+                    points_list.append(tp)
+                points_lists.append(points_list)
+
+        route_map = folium.Map(location=[points_lists[0][0].lat, points_lists[0][0].long], zoom_start=15)
+        all_coords = []
+        for points in points_lists:
+            coords = []
+            for point in points:
+                coords.append([point.lat, point.long])
+            all_coords.append(coords)
+        folium.PolyLine(locations=all_coords, radius=5, color="red", weight=5, opacity=1).add_to(route_map)
+        route_map.save(
+            "/home/dmitriy/Senior_Developer/High programming school of Bobrovsky/HPS_HTML_diploma/src/map_route.html"
+        )

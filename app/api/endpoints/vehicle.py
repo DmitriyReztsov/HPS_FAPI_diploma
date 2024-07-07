@@ -23,10 +23,11 @@ async def get_vehicles(
     vehicle_service: VehicleService = Depends(get_vehicle_service),
     current_user: UserExtended = Depends(get_current_active_user),
     page_params: PageParams = Depends(),
+    enterprise_id: int = None,
 ):
     if current_user.role is None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You should have a role in a compmany.")
-    return await vehicle_service.get_vehicles(current_user, page_params)
+    return await vehicle_service.get_vehicles(current_user, page_params, enterprise_id)
 
 
 @vehicle_router.get("/vehicles/{vehicle_id}", response_model=VehicleFromDB)

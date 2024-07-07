@@ -43,9 +43,10 @@ class VehicleRepository(Repository):
             .join(VehicleModel, Vehicle.brandmodel_id == VehicleModel.id)
             .join(VehicleBrand, VehicleModel.brand_id == VehicleBrand.id)
             .join(Enterprise, Vehicle.enterprise_id == Enterprise.id, isouter=True)
-            .where(self.model.enterprise_id.in_(filter_set.get("enterprise_id")))
-            .order_by(self.model.id)
         )
+        if filter_set is not None:
+            stmt = stmt.where(self.model.enterprise_id.in_(filter_set.get("enterprise_id")))
+        stmt = stmt.order_by(self.model.id)
         result = await self.session.execute(stmt)
         return result.scalars().all()
 

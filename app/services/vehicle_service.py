@@ -178,19 +178,23 @@ class VehicleService:
             return vehicle_to_return
 
     async def get_vehicles(
-        self, current_user: UserExtended = None, page_params: PageParams = None
+        self, current_user: UserExtended = None, page_params: PageParams = None, enterprise_id: int = None
     ) -> PagedResponseSchema[VehicleFromDB]:
         if not current_user:
             return None
 
         allowed_objects = get_users_enterpises(current_user)
         async with self.uow:
-            if current_user.role == "manager" and allowed_objects.get("enterprise_id"):
-                vehicles: list = await self.uow.vehicle.find_all_with_brandmodel_filter_by_enterprise(allowed_objects)
+            if enterprise_id is not None and (
+                (current_user.role == "manager" and enterprise_id in allowed_objects.get("enterprise_id"))
+                or current_user.role == "admin"
+            ):
+                allowed_objects["enterprise_id"] = [enterprise_id]
             elif current_user.role == "admin":
-                vehicles: list = await self.uow.vehicle.find_all_with_brandmodel()
-            else:
+                allowed_objects = None
+            elif current_user.role == "manager" and allowed_objects.get("enterprise_id") is None:
                 raise ValidationException({"enterprise_id": "You are not allowed to get vehicles for this enterprise"})
+            vehicles: list = await self.uow.vehicle.find_all_with_brandmodel_filter_by_enterprise(allowed_objects)
             from_index = page_params.page * page_params.size
             to_index = (page_params.page + 1) * page_params.size
             return PagedResponseSchema(

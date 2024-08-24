@@ -13,10 +13,12 @@ from app.db.database import Base  # noqa E402
 from app.db.models import (  # noqa E402
     Driver,
     Enterprise,
+    Report,
     Trip,
     User,
     Vehicle,
     VehicleBrand,
+    VehicleMileageReport,
     VehicleModel,
     VehicleTrackPoint,
     user_enterprise_association_table,

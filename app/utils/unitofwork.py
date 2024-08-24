@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from app.db.database import async_session_maker
 from app.repositories.driver_repository import DriverRepository
 from app.repositories.enterprise_repository import EnterpriseRepository
+from app.repositories.report_repository import ReportRepository
 from app.repositories.trip_repository import TripRepository
 from app.repositories.user_repository import UserRepository
 from app.repositories.vehicle_repository import (
@@ -14,14 +15,15 @@ from app.repositories.vehicle_repository import (
 
 
 class IUnitOfWork(ABC):
+    driver: DriverRepository
+    enterprise: EnterpriseRepository
+    report: ReportRepository
+    trip: TripRepository
+    user: UserRepository
     vehicle: VehicleRepository
     vehiclebrand: VehicleBrandRepository
     vehiclemodel: VehicleModelRepository
     vehicletrackpoint: VehicleTrackPointRepository
-    driver: DriverRepository
-    enterprise: EnterpriseRepository
-    user: UserRepository
-    trip: TripRepository
 
     @abstractmethod
     def __init__(self): ...
@@ -46,14 +48,15 @@ class UnitOfWork(IUnitOfWork):
     async def __aenter__(self):
         self.session = self.session_factory()
 
+        self.driver = DriverRepository(self.session)
+        self.enterprise = EnterpriseRepository(self.session)
+        self.report = ReportRepository(self.session)
+        self.trip = TripRepository(self.session)
+        self.user = UserRepository(self.session)
         self.vehicle = VehicleRepository(self.session)
         self.vehiclebrand = VehicleBrandRepository(self.session)
         self.vehiclemodel = VehicleModelRepository(self.session)
         self.vehicletrackpoint = VehicleTrackPointRepository(self.session)
-        self.driver = DriverRepository(self.session)
-        self.enterprise = EnterpriseRepository(self.session)
-        self.user = UserRepository(self.session)
-        self.trip = TripRepository(self.session)
 
     async def __aexit__(self, *args):
         await self.rollback()

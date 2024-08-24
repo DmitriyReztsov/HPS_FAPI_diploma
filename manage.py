@@ -120,13 +120,18 @@ def create_vehicle(
 def generate_track_points(
     vehicle_id: Annotated[int, typer.Option(help=("Vehicle ID, track ponts should be generated for."))],
     radius: Annotated[int, typer.Option(help=("Track pont radius."))] = None,
+    datetime_est: Annotated[str, typer.Option(help=("Date time in iso format dd-mm-yyyyThh:mm:ss"))] = None,
 ):
     coords = ([13.384116, 52.533558], [13.428726, 52.519355])
     points_dict = generate_route(*coords, radius)
+    time_now = (
+        datetime.strptime(datetime_est, "%d-%m-%YT%H:%M:%S").replace(tzinfo=ZoneInfo("UTC"))
+        if datetime_est
+        else datetime.now(tz=ZoneInfo("UTC"))
+    )
 
     with Session(engine) as session:
         bulk_points_list = []
-        time_now = datetime.now(tz=ZoneInfo("UTC"))
         for time_offset, point in points_dict.items():
             data = {
                 "date_time": time_now + timedelta(seconds=(10 * time_offset)),

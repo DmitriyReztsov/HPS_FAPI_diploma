@@ -32,5 +32,9 @@ class Enterprise(Base):
         "User", secondary=user_enterprise_association_table, back_populates="enterprises", lazy="immediate"
     )
 
+    reports: Mapped[list["Report"]] = relationship(  # noqa F821 # type: ignore
+        "Report", back_populates="enterprise", lazy="immediate"
+    )
+
     def __str__(self):
         return self.company_name

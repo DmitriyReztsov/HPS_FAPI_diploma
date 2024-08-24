@@ -56,3 +56,8 @@ class VehicleFromDB(VehicleCreate, SchemaMixin):
         obj = cls.set_user_timezone_to_datetime_fields(obj, tz)
 
         return cls.model_validate(obj)
+
+
+class VehicleNamesFromDB(BaseModel):
+    id: int
+    vehicle_name: str

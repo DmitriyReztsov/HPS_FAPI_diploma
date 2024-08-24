@@ -6,16 +6,22 @@ from sqladmin import Admin
 from app.admin.driver_admin import DriverAdmin, DriverVehicleAdmin
 from app.admin.enterprise_admin import EnterpriseAdmin
 from app.admin.user_admin import UserAdmin
-from app.admin.vehicle_admin import VehicleAdmin, VehicleBrandAdmin, VehicleModelAdmin, VehicleTrackPointAdmin
+from app.admin.vehicle_admin import (
+    VehicleAdmin,
+    VehicleBrandAdmin,
+    VehicleModelAdmin,
+    VehicleTrackPointAdmin,
+)
 from app.api.endpoints import (
     driver_router,
     enterprise_router,
+    report_router,
+    trip_router,
     user_router,
     vehicle_brand_router,
     vehicle_model_router,
     vehicle_router,
     vehicle_track_point_router,
-    trip_router,
 )
 from app.db.database import engine
 
@@ -30,6 +36,7 @@ admin.add_view(DriverAdmin)
 admin.add_view(EnterpriseAdmin)
 admin.add_view(DriverVehicleAdmin)
 
+app.include_router(report_router)
 app.include_router(vehicle_router)
 app.include_router(trip_router)
 app.include_router(vehicle_brand_router)

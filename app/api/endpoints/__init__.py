@@ -1,5 +1,6 @@
 from .drivers import driver_router
 from .enterprises import enterprise_router
+from .report import report_router
 from .trip import trip_router
 from .user import user_router
 from .vehicle import vehicle_router

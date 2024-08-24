@@ -6,7 +6,7 @@ from sqlalchemy.exc import NoResultFound
 
 from app.api.endpoints.user import get_current_active_user
 from app.api.schemas.user import UserExtended
-from app.api.schemas.vehicle import VehicleCreate, VehicleFromDB, VehiclePartialUpdate
+from app.api.schemas.vehicle import VehicleCreate, VehicleFromDB, VehiclePartialUpdate, VehicleNamesFromDB
 from app.services.vehicle_service import VehicleService
 from app.utils.pagination import PagedResponseSchema, PageParams
 from app.utils.unitofwork import IUnitOfWork, UnitOfWork
@@ -28,6 +28,14 @@ async def get_vehicles(
     if current_user.role is None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You should have a role in a compmany.")
     return await vehicle_service.get_vehicles(current_user, page_params, enterprise_id)
+
+
+@vehicle_router.get("/vehicles_names/", response_model=list[VehicleNamesFromDB])
+async def get_vehicles_names(
+    vehicle_service: VehicleService = Depends(get_vehicle_service),
+    enterprise_id: int = None,
+):
+    return await vehicle_service.get_vehicles_names(enterprise_id)
 
 
 @vehicle_router.get("/vehicles/{vehicle_id}", response_model=VehicleFromDB)

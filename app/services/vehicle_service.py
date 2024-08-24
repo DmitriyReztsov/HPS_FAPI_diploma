@@ -5,7 +5,7 @@ from fastapi.exceptions import ValidationException
 from pytz import timezone
 
 from app.api.schemas.user import UserExtended
-from app.api.schemas.vehicle import VehicleCreate, VehicleFromDB, VehiclePartialUpdate
+from app.api.schemas.vehicle import VehicleCreate, VehicleFromDB, VehiclePartialUpdate, VehicleNamesFromDB
 from app.api.schemas.vehicle_brand import (
     VehicleBrandCreate,
     VehicleBrandFromDB,
@@ -176,6 +176,14 @@ class VehicleService:
             vehicle_to_return = VehicleFromDB.model_validate(vehicle_from_db)
 
             return vehicle_to_return
+
+    async def get_vehicles_names(self, enterprise_id: int) -> list[VehicleNamesFromDB]:
+        async with self.uow:
+            vehicles = await self.uow.vehicle.find_all_filter_by_enterprise({"enterprise_id": [enterprise_id]})
+            list_to_return = []
+            for vehicle in vehicles:
+                list_to_return.append(VehicleNamesFromDB(id=vehicle.id, vehicle_name=str(vehicle)))
+            return list_to_return
 
     async def get_vehicles(
         self, current_user: UserExtended = None, page_params: PageParams = None, enterprise_id: int = None

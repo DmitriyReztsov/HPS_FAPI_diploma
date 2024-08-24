@@ -31,10 +31,13 @@ class Repository(AbstractRepository):
         return result.scalars().all()
 
     async def find_all_filter_by_enterprise(self, filter_set: dict = None):
+        order_column = self.model.id
+        if filter_set.get("desc") is True:
+            order_column = order_column.desc()
         stmt = (
             select(self.model)
             .where(self.model.enterprise_id.in_(filter_set.get("enterprise_id")))
-            .order_by(self.model.id)
+            .order_by(order_column)
         )
         result = await self.session.execute(stmt)
         return result.scalars().all()

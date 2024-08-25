@@ -7,3 +7,8 @@ To start the app:
 To generate migration
 ```alembic revision --autogenerate -m "Migration message"```
 ```alembic upgrade head```
+
+To start in containers:
+```docker-compose up --build```
+
+Then run migrations in backend-fastapi container

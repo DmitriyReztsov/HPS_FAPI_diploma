@@ -9,10 +9,34 @@ services:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "postgres"
       POSTGRES_HOST_AUTH_METHOD: trust
+    networks:
+      - backend-fastapi-network
     volumes:
       - fastapi-postgres:/var/lib/postgresql
     ports:
       - "5432:5432"
 
+  backend-fastapi: &fastapi
+    container_name: backend-fasapi
+    image: myimage
+    restart: always
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    depends_on:
+      - db
+    ports:
+      - "80:80"
+    # volumes:
+    #   - ./django-app:/src/code
+    # command: /start
+    networks:
+      # - nginx-proxy
+      - backend-fastapi-network
+
 volumes:
   fastapi-postgres:
+    external: true
+
+networks:
+  backend-fastapi-network:

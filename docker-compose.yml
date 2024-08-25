@@ -26,7 +26,7 @@ services:
     depends_on:
       - db
     ports:
-      - "80:80"
+      - "5000:5000"
     # volumes:
     #   - ./django-app:/src/code
     # command: /start

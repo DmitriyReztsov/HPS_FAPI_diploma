@@ -11,4 +11,4 @@ COPY ./main.py /code/main.py
 COPY ./alembic /code/alembic
 COPY ./app /code/app
 
-CMD ["uvicorn", "main:app", "--proxy-headers", "--host", "0.0.0.0", "--port", "80"]
+CMD ["uvicorn", "main:app", "--proxy-headers", "--host", "0.0.0.0", "--port", "5000"]

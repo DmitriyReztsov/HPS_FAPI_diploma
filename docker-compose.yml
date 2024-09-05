@@ -7,8 +7,8 @@ services:
     environment:
       POSTGRES_DB: "fastapidb"
       POSTGRES_USER: "postgres"
-      POSTGRES_PASSWORD: "postgres"
-      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_PASSWORD: "postgres_pass"
+      # POSTGRES_HOST_AUTH_METHOD: trust
     networks:
       - backend-fastapi-network
     volumes:
@@ -27,11 +27,7 @@ services:
       - db
     ports:
       - "5000:5000"
-    # volumes:
-    #   - ./django-app:/src/code
-    # command: /start
     networks:
-      # - nginx-proxy
       - backend-fastapi-network
 
 volumes:

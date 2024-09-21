@@ -1,0 +1,23 @@
+name: HPS_FASTAPI_backend
+
+on: 
+  push:
+    branches: [ "master" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    steps:
+    - name: executing remote ssh commands to deploy
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HI_HOST }}
+        username: ${{ secrets.HI_USER }}
+        key: ${{ secrets.HI_SSH_KEY }}
+        port: ${{ secrets.HI_PORT }}
+        script: |
+          cd /home/diploma/HPS_FAPI_diploma/
+          git pull
+          docker image rm -f myimage:latest
+          docker compose up -d --build

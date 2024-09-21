@@ -3,7 +3,7 @@ services:
   db:
     container_name: db
     image: postgis/postgis:16-3.4
-    restart: always
+    restart: 'no'
     environment:
       POSTGRES_DB: "fastapidb"
       POSTGRES_USER: "postgres"

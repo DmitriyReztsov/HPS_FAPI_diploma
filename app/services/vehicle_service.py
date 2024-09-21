@@ -283,7 +283,8 @@ class VehicleService:
         vehicle_dict: dict = vehicle_data.model_dump_with_tz_align(tz=company_tz, exclude_unset=True)
         async with self.uow:
             vehicle_from_db = await self.uow.vehicle.update_one(vehicle_id, vehicle_dict)
-            vehicle_to_return = VehicleFromDB.model_validate(vehicle_from_db)
+            vehicle_from_db_with_join = await self.uow.vehicle.find_one(vehicle_from_db.id)
+            vehicle_to_return = VehicleFromDB.model_validate(vehicle_from_db_with_join)
 
             await self.uow.commit()
             return vehicle_to_return

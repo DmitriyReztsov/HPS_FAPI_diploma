@@ -199,6 +199,7 @@ class TripService:
                 coords.append([point.lat, point.long])
             all_coords.append(coords)
         folium.PolyLine(locations=all_coords, radius=5, color="red", weight=5, opacity=1).add_to(route_map)
-        route_map.save(
-            "/home/dmitriy/Senior_Developer/High programming school of Bobrovsky/HPS_HTML_diploma/src/map_route.html"
-        )
+        f = open("map.html", "w")
+        f.close()
+        route_map.save("/code/map.html")
+        return route_map

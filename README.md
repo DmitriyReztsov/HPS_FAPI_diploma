@@ -15,7 +15,7 @@ To start in containers create volume and run biuld:
 
 ```bash
 docker volume create --name=fastapi-postgres
-docker-compose up --build
+docker compose up --build
 
 ```
 

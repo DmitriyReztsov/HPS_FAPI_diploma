@@ -3,6 +3,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, HTTPException, status
 from fastapi.exceptions import ValidationException
+from fastapi.responses import FileResponse
 from sqlalchemy.exc import NoResultFound
 
 from app.api.endpoints.user import get_current_active_user
@@ -69,13 +70,16 @@ async def get_trips_by_vehicle(
     return await trip_service.get_trips_by_vehicle(current_user, vehicle_id, from_date, till_date, geojson)
 
 
-@trip_router.post("/get_map_for_trip/{vehicle_id}", status_code=status.HTTP_200_OK)
+@trip_router.post("/get_map_for_trip/{vehicle_id}", response_class=FileResponse, status_code=status.HTTP_200_OK)
 async def create_map_for_trip(
+    response: FileResponse,
     trip_ids: Annotated[TripPointsForMap, Body()],
     trip_service: TripService = Depends(get_trip_service),
     vehicle_id: int = None,
 ):
     await trip_service.create_map(vehicle_id, trip_ids)
+    response.headers["X-Frame-Options"] = "SAMEORIGIN"
+    return "/code/map.html"
 
 
 @trip_router.get("/trips/{trip_id}", response_model=TripFromDB)
